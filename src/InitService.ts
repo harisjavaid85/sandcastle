@@ -55,6 +55,12 @@ const TEMPLATES: TemplateMetadata[] = [
       "Plans parallelizable issues, executes with per-branch review, merges",
     dependencies: ["zod"],
   },
+  {
+    name: "advanced-loop",
+    description:
+      "Implements a PRD's triaged issues on a shared branch, drafts a PR, and labels it for human merge",
+    dependencies: ["zod"],
+  },
 ];
 
 export const listTemplates = (): TemplateMetadata[] => TEMPLATES;

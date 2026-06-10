@@ -1,0 +1,4 @@
+{
+  "name": "advanced-loop",
+  "description": "Implements a PRD's triaged issues on a shared branch, drafts a PR, and labels it for human merge"
+}
