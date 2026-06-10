@@ -30,7 +30,7 @@ Sandcastle is provider-agnostic — it ships with built-in providers for Docker,
 1. Install the package:
 
 ```bash
-npm install --save-dev @ai-hero/sandcastle
+npm install --save-dev github:harisjavaid85/sandcastle#advanced-loop
 ```
 
 2. Run `npx @ai-hero/sandcastle init`. This scaffolds a `.sandcastle` directory with all the files needed.
@@ -38,6 +38,8 @@ npm install --save-dev @ai-hero/sandcastle
 ```bash
 npx @ai-hero/sandcastle init
 ```
+
+To scaffold advanced-loop template in a target repo, see [advanced-loop prerequisites](src/templates/advanced-loop/README.md#prerequisites-in-the-target-repo).
 
 3. Edit `.sandcastle/.env` and fill in your default values for `ANTHROPIC_API_KEY`. If you want to use your Claude subscription instead of an API key, see [#191](https://github.com/mattpocock/sandcastle/issues/191).
 

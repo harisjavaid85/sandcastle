@@ -204,7 +204,19 @@ All baked into the Docker image at a pinned commit SHA. Bump by rebuilding the i
 
 For a new target repo (one-time):
 
-1. `sandcastle init --template advanced-loop ...` to scaffold `.sandcastle/` (including the template-shipped `Dockerfile`).
+1. Scaffold `.sandcastle/` dir:
+
+   ```bash
+   npx @ai-hero/sandcastle init \
+     --template advanced-loop \
+     --sandbox docker \
+     --issue-tracker github-issues \
+     --agent claude-code \
+     --build-image false \
+     --install-template-deps false \
+     --create-label false
+   ```
+
 2. Optionally bump the pinned `SKILLS_SHA` in `.sandcastle/Dockerfile`; build: `sandcastle docker build-image`.
 3. Run `setup-repo-skills` to scaffold issue labels, commit tags, verify tiers, agent instructions, and the `kind:prd` label in one pass.
 4. Run `/setup-pre-commit` to install the pre-commit substrate.
