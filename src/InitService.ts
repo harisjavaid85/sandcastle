@@ -727,16 +727,77 @@ const copyTemplateFiles = (
           (f) =>
             f !== "template.json" &&
             f !== ".env.example" &&
+            f !== "Dockerfile" &&
+            f !== "Containerfile" &&
             !COMPILED_FILE_EXTENSIONS.some((ext) => f.endsWith(ext)),
         )
-        .map((f) => {
-          const destName = f === "main.mts" ? mainFilename : f;
-          return fs
-            .copyFile(join(templateDir, f), join(destDir, destName))
-            .pipe(Effect.mapError((e) => new Error(e.message)));
-        }),
+        .map((f) =>
+          Effect.gen(function* () {
+            const src = join(templateDir, f);
+            // Skip subdirectories — templates may keep dev-only docs/ at the
+            // source level without shipping them into scaffolded targets.
+            const stat = yield* fs
+              .stat(src)
+              .pipe(Effect.mapError((e) => new Error(e.message)));
+            if (stat.type === "Directory") return;
+            const destName = f === "main.mts" ? mainFilename : f;
+            yield* fs
+              .copyFile(src, join(destDir, destName))
+              .pipe(Effect.mapError((e) => new Error(e.message)));
+          }),
+        ),
       { concurrency: "unbounded" },
     );
+  });
+
+/**
+ * Resolve the containerfile content to write: prefer a template-shipped
+ * Dockerfile / Containerfile (matching the sandbox provider's
+ * containerfile name) if present, otherwise fall back to the agent default.
+ */
+const resolveContainerfileContent = (
+  templateDir: string,
+  containerfileName: string,
+  agentDefault: string,
+): Effect.Effect<string, Error, FileSystem.FileSystem> =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const templateContainerfile = join(templateDir, containerfileName);
+    const exists = yield* fs
+      .exists(templateContainerfile)
+      .pipe(Effect.mapError((e) => new Error(e.message)));
+    if (!exists) return agentDefault;
+    return yield* fs
+      .readFileString(templateContainerfile)
+      .pipe(Effect.mapError((e) => new Error(e.message)));
+  });
+
+/**
+ * Resolve the .env.example content to write: prefer a template-shipped
+ * .env.example if present, otherwise synthesize from the agent + issue
+ * tracker env blocks.
+ */
+const resolveEnvExampleContent = (
+  templateDir: string,
+  agent: AgentEntry,
+  issueTracker: IssueTrackerEntry,
+): Effect.Effect<string, Error, FileSystem.FileSystem> =>
+  Effect.gen(function* () {
+    const fs = yield* FileSystem.FileSystem;
+    const templateEnvExample = join(templateDir, ".env.example");
+    const exists = yield* fs
+      .exists(templateEnvExample)
+      .pipe(Effect.mapError((e) => new Error(e.message)));
+    if (exists) {
+      return yield* fs
+        .readFileString(templateEnvExample)
+        .pipe(Effect.mapError((e) => new Error(e.message)));
+    }
+    const parts = [agent.envExample];
+    if (issueTracker.envExample) {
+      parts.push(issueTracker.envExample);
+    }
+    return parts.join("\n") + "\n";
   });
 
 /**
@@ -1034,19 +1095,26 @@ export const scaffold = (
 
     const templateDir = yield* getTemplateDir(templateName);
 
-    // Build .env.example from agent + issue tracker env blocks
-    const envExampleParts = [agent.envExample];
-    if (issueTracker.envExample) {
-      envExampleParts.push(issueTracker.envExample);
-    }
-    const envExampleContent = envExampleParts.join("\n") + "\n";
+    // Scaffold .env.example
+    const envExampleContent = yield* resolveEnvExampleContent(
+      templateDir,
+      agent,
+      issueTracker,
+    );
+
+    // Scaffold Dockerfile / Containerfile
+    const containerfileContent = yield* resolveContainerfileContent(
+      templateDir,
+      sandboxProvider.containerfileName,
+      agent.dockerfileTemplate,
+    );
 
     yield* Effect.all(
       [
         fs
           .writeFileString(
             join(configDir, sandboxProvider.containerfileName),
-            agent.dockerfileTemplate,
+            containerfileContent,
           )
           .pipe(Effect.mapError((e) => new Error(e.message))),
         fs
