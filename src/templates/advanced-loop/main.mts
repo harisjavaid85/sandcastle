@@ -115,6 +115,12 @@ const worktreeConfig = {
       ],
     },
   },
+  timeouts: {
+    copyToWorktreeMs: 120_000,
+    gitSetupMs: 30_000,
+    commitCollectionMs: 60_000,
+    mergeToHostMs: 60_000,
+  },
 };
 
 // ---------------------------------------------------------------------------

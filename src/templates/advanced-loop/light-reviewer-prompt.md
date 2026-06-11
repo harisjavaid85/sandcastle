@@ -58,20 +58,20 @@ You are a refining reviewer. Skip if the PR carries the actual `needs-info` labe
    - Posting inline review comments, filing issues, or otherwise surfacing non-confident findings — there is no audit channel in this mode by design
 
 6. **Apply refinements (batched)**:
-   - For each `(file, change)` pair:
-     - Read the file (use `Read`, not `gh pr diff`).
-     - Edit to apply the refinement.
-     - Run Fast-tier verify (read `AGENTS.md` for the commands).
-     - If verify fails: revert this edit, drop it from the surviving set, move on.
-   - If at least one edit survived: single `/commit auto` over all surviving edits, then `git push origin {{BRANCH}}`. If the push fails, leave the branch as-is, print "Push failed — branch unlabeled, requires inspection.", emit `<promise>COMPLETE</promise>`, and stop. Do not label, do not retry.
+   - **Implement and Verify** — for each `(file, change)` pair:
+     - Read the file. Edit to apply the refinement. Run Fast-tier verify (read `AGENTS.md` for the commands).
+     - If verify fails: revert this edit, drop it from the surviving set.
+   - If zero edits survive, skip to step 7.
+   - **Commit** — run `/commit auto` over the surviving edits. When `/commit` returns control, continue to push.
+   - **Push** — `git push origin {{BRANCH}}`. On success, continue to step 7. On failure, print "Push failed — branch unlabeled, requires inspection.", emit `<promise>COMPLETE</promise>`, and stop. Do not label, do not retry.
 
-7. **Label ready for human** (reached only on clean exit — no edits attempted, or all surviving edits committed + pushed):
+7. **Mark the PR ready** — reached when step 5 produced no edits, OR step 6's push succeeded. Run:
 
    ```
    gh pr ready <pr-number>
    gh pr edit <pr-number> --add-label "<actual ready-for-human>"
    ```
 
-   Print: "Refined. <N> edits applied; <M> reverted on verify-fail; <K> skipped as out-of-scope or non-confident."
+   Print one line: "Refined. <N> applied, <M> reverted, <K> skipped."
 
 8. Emit `<promise>COMPLETE</promise>`.
