@@ -33,7 +33,7 @@ import { z } from "zod";
 // load .env here so we can read it.
 process.loadEnvFile(new URL("./.env", import.meta.url));
 
-function requireEnv(...names: string[]): Record<string, string> {
+function requireEnv<const N extends string>(...names: N[]): Record<N, string> {
   const missing = names.filter((n) => !process.env[n]?.trim());
   if (missing.length > 0) {
     console.error(
@@ -42,7 +42,9 @@ function requireEnv(...names: string[]): Record<string, string> {
     );
     process.exit(2);
   }
-  return Object.fromEntries(names.map((n) => [n, process.env[n]!.trim()]));
+  return Object.fromEntries(
+    names.map((n) => [n, process.env[n]!.trim()]),
+  ) as Record<N, string>;
 }
 
 const { PRD_SLUG, IMAGE_NAME } = requireEnv("PRD_SLUG", "IMAGE_NAME");
