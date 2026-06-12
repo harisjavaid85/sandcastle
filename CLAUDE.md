@@ -16,6 +16,24 @@ Issues live as GitHub issues in `mattpocock/sandcastle`. See `docs/agents/issue-
 
 Default canonical labels. Agent provider support is detailed here. See `docs/agents/triage.md`.
 
+### Commit tags
+
+Conventional Commits: `<type>: <summary>` with imperative mood; tags: `feat`, `fix`, `docs`, etc. See `docs/agents/commit-tags.md`.
+
 ### Domain docs
 
 Single-context layout: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+## Verify
+
+How to confirm a change works. Run the Fast tier on every change; run the Full tier before opening a PR.
+
+**Fast**
+
+- `npm run typecheck` — `tsgo --noEmit`
+- `npm test` — `vitest run`
+- `npm run format:check` — `prettier --check .`
+
+**Full**
+
+- `npm run build` — `tsup` bundle (catches packaging/export breakage typecheck misses)

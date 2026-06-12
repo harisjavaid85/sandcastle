@@ -4,3 +4,6 @@ dist
 !src/templates/*/.env.example
 .vercel
 .claude/settings.local.json
+.claude/plans/
+.claude/handoffs/
+.claude/overviews/

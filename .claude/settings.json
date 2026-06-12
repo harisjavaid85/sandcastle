@@ -12,7 +12,14 @@
       "Bash(npm test:*)",
       "Bash(npm check:*)",
       "Bash(npm run typecheck *)",
-      "Bash(git merge sandcastle/*)"
+      "Bash(git merge sandcastle/*)",
+      "Write(./.claude/plans/**)",
+      "Edit(./.claude/plans/**)",
+      "Write(./.claude/handoffs/**)",
+      "Edit(./.claude/handoffs/**)",
+      "Write(./.claude/overviews/**)",
+      "Edit(./.claude/overviews/**)"
     ]
-  }
+  },
+  "plansDirectory": ".claude/plans"
 }
