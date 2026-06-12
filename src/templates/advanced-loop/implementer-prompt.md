@@ -14,22 +14,23 @@ You are an implementer for issue #{{ISSUE_NUMBER}}. Take it from open to closed:
 
 **Discipline**: The Procedure and Bail-out are single multi-step transactions. From any intermediate step, continue to the next — do not stop. The only valid termination is a step that emits the complete signal.
 
-1. **Pre-flight** — read `AGENTS.md`, `CONTEXT.md`, `README.md`, then `package.json` scripts as fallbacks, for project conventions and **Fast-tier verify** commands. If none surfaces, post a setup-incomplete comment on the issue and stop.
+1. **Pre-flight** — read `AGENTS.md`, `CONTEXT.md`, `README.md`, then `package.json` scripts as fallbacks, for project conventions, **Fast-tier verify** commands, and any **change-recording conventions** (changelog/changeset format and bump rules, docs/README update expectations). If no verify commands surface, post a setup-incomplete comment on the issue and stop.
 2. **Read the issue + parent PRD**:
    - `gh issue view {{ISSUE_NUMBER}} --json title,body,comments` for the work-ticket.
    - `gh issue list --label "{{PRD_LABEL}}" --label "kind:prd" --state open --json number,body --limit 1` for the PRD tracker body.
 3. **Implement via `/tdd`** — handles red-green-refactor; recognises refactor-only changes and verifies existing tests still cover touched paths.
 4. **Verify** after each substantive edit — run all Fast-tier commands in documented order. Do not proceed if any fail. Do not run Full-tier commands (CI owns that).
-5. **Commit via `/commit auto`** — handles tagged subject + body + pre-commit hook retry. Never bypass hooks with `--no-verify`.
-6. **Push**: `git push origin {{BRANCH}}`.
-7. **Close the issue**:
+5. **Record the change** — if the change is user-facing: add the change-metadata entry according to the repo's conventions (bump per the same kind resolved for the commit tag) and update any docs/README affected by changed public behavior. If the repo declares no such convention or the change is not user-facing, skip.
+6. **Commit via `/commit auto`** — handles tagged subject + body + pre-commit hook retry. Never bypass hooks with `--no-verify`.
+7. **Push**: `git push origin {{BRANCH}}`.
+8. **Close the issue**:
    - Remove the actual `ready-for-agent` label: `gh issue edit {{ISSUE_NUMBER}} --remove-label "<ready-for-agent>"`.
    - Write the close comment to `/tmp/implementer-close-{{ISSUE_NUMBER}}.md`, then:
      ```
      gh issue comment {{ISSUE_NUMBER}} --body-file /tmp/implementer-close-{{ISSUE_NUMBER}}.md
      gh issue close {{ISSUE_NUMBER}}
      ```
-8. Emit `<promise>COMPLETE</promise>`.
+9. Emit `<promise>COMPLETE</promise>`.
 
 ### Bail-out
 

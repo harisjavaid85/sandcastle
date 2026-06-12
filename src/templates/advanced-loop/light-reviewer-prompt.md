@@ -39,16 +39,18 @@ You are a refining reviewer. Skip if the PR carries the actual `needs-info` labe
 
    The diff is the entire surface you may refine. Do not touch code outside the diff.
 
-5. **Identify refinements.** Within the diff, look for opportunities to:
-   - Reduce unnecessary complexity, nesting, or redundant code
+5. **Pre-flight verify** — run Fast-tier verify (read `AGENTS.md` for the commands) on untouched HEAD. If it fails, print "HEAD fails Fast-tier verify — not refining, branch unlabeled, requires inspection.", emit `<promise>COMPLETE</promise>`, and stop. Do not refine, do not label.
+
+6. **Identify refinements.** Within the diff, look for opportunities to:
+   - Reduce unnecessary complexity or nesting; collapse convoluted control flow into clearer, flatter statement forms when the rewrite is unambiguous and behavior-preserving
    - Improve readability through clearer variable / function names
-   - Consolidate related logic
-   - Eliminate dead branches, unused imports, unsafe casts, generic types, unchecked assumptions
+   - Consolidate related logic; remove redundant or duplicated code
+   - Eliminate dead branches and unused imports
+   - Safety: tighten unsafe casts, over-broad generic types, and unchecked assumptions when the narrower form is unambiguous and behavior-preserving
    - Remove comments that merely describe what the code does
-   - Replace nested ternaries with switch or if/else chains
    - Add any missing edge-case test for a behavior the diff already implements (not new behavior)
 
-   Refinements must respect project conventions in `AGENTS.md` and `README.md` files. Hold a list of `(file, change)` pairs. If the list is empty, skip to step 7.
+   Refinements must respect project conventions in `AGENTS.md` and `README.md` files. Hold a list of `(file, change)` pairs. If the list is empty, skip to step 8.
 
    **Out of scope** — do NOT pursue any of the following; if you notice them, leave them alone:
    - Anything that changes observable behavior or output ("preserve functionality" is the floor)
@@ -57,15 +59,15 @@ You are a refining reviewer. Skip if the PR carries the actual `needs-info` labe
    - Anything you are not confident is an improvement — skipping silently is the correct path
    - Posting inline review comments, filing issues, or otherwise surfacing non-confident findings — there is no audit channel in this mode by design
 
-6. **Apply refinements (batched)**:
+7. **Apply refinements (batched)**:
    - **Implement and Verify** — for each `(file, change)` pair:
      - Read the file. Edit to apply the refinement. Run Fast-tier verify (read `AGENTS.md` for the commands).
      - If verify fails: revert this edit, drop it from the surviving set.
-   - If zero edits survive, skip to step 7.
+   - If zero edits survive, skip to step 8.
    - **Commit** — run `/commit auto` over the surviving edits. When `/commit` returns control, continue to push.
-   - **Push** — `git push origin {{BRANCH}}`. On success, continue to step 7. On failure, print "Push failed — branch unlabeled, requires inspection.", emit `<promise>COMPLETE</promise>`, and stop. Do not label, do not retry.
+   - **Push** — `git push origin {{BRANCH}}`. On success, continue to step 8. On failure, print "Push failed — branch unlabeled, requires inspection.", emit `<promise>COMPLETE</promise>`, and stop. Do not label, do not retry.
 
-7. **Mark the PR ready** — reached when step 5 produced no edits, OR step 6's push succeeded. Run:
+8. **Mark the PR ready** — reached when step 6 produced no edits, OR step 7's push succeeded. Run:
 
    ```
    gh pr ready <pr-number>
@@ -74,4 +76,4 @@ You are a refining reviewer. Skip if the PR carries the actual `needs-info` labe
 
    Print one line: "Refined. <N> applied, <M> reverted, <K> skipped."
 
-8. Emit `<promise>COMPLETE</promise>`.
+9. Emit `<promise>COMPLETE</promise>`.
